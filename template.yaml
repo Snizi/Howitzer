@@ -1,0 +1,16 @@
+profiles:
+  moderator:
+    description: "Original endpoints with JWT replacement"
+    original_headers: keep
+    replace:
+      - header: Authorization
+    add: []
+
+  user:
+    description: "API key only - remove all original headers"
+    original_headers: remove
+    replace: []
+    add:
+      - header: Authorization
+      - header: X-Environmentid-Type
+      - header: X-Environmentid
