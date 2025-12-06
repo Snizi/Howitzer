@@ -2,6 +2,8 @@
 
 Howitzer is a Python-based security tool designed to detect authorization bypass vulnerabilities. It works by replaying HTTP requests captured from Burp Suite with different user profiles (credentials) and comparing the response lengths to identify potential access control issues.
 
+![alt text](https://github.com/Snizi/Howitzer/blob/main/docs/Howitzer.png?raw=true)
+
 ## Features
 
 - **Burp Suite Integration**: Parses XML exports directly from Burp Suite.
