@@ -34,7 +34,6 @@ class TestRequestReplayService(unittest.TestCase):
         )
 
     def test_replay_request_success(self):
-        # Setup mocks
         self.profile_processor.apply_profile.return_value = self.modified_request
         self.http_client.send_request.return_value = self.modified_response
         self.match_detector.detect_match.return_value = Match(
@@ -43,13 +42,11 @@ class TestRequestReplayService(unittest.TestCase):
             response_length=8, original_length=8
         )
 
-        # Execute
         match = self.service.replay_request(
             self.original_request, self.original_response, self.profile,
             [], []
         )
 
-        # Verify
         self.profile_processor.apply_profile.assert_called_once()
         self.http_client.send_request.assert_called_once_with(self.modified_request)
         self.match_detector.detect_match.assert_called_once()
@@ -57,11 +54,9 @@ class TestRequestReplayService(unittest.TestCase):
         self.logger.success.assert_called_once()
 
     def test_replay_request_http_error(self):
-        # Setup mocks
         self.profile_processor.apply_profile.return_value = self.modified_request
         self.http_client.send_request.side_effect = HTTPClientError("Error")
 
-        # Execute & Verify
         with self.assertRaises(HTTPClientError):
             self.service.replay_request(
                 self.original_request, self.original_response, self.profile,

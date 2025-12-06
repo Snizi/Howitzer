@@ -2,10 +2,8 @@ from .base import OutputFormatter
 
 
 class ASCIITableOutput(OutputFormatter):
-    """ASCII table formatter for stdout display."""
 
     def generate(self, results, output_dir='.', total_requests=0):
-        """Display results in ASCII table to stdout."""
         if not results:
             print("\n" + "="*100)
             print(f"No matching endpoints found across any profile. (Total requests: {total_requests})")
@@ -16,13 +14,11 @@ class ASCIITableOutput(OutputFormatter):
         print(f"{'MATCHING ENDPOINTS SUMMARY':^130}")
         print("="*130)
 
-        # Calculate column widths
         max_host = max((len(r.get('host', '')) for r in results), default=20)
         max_path = max((len(r.get('path', '')) for r in results), default=20)
         max_method = max((len(r.get('method', '')) for r in results), default=6)
         max_profile = max((len(r.get('profile', '')) for r in results), default=10)
 
-        # Ensure minimum widths
         host_width = max(max_host, 25)
         path_width = max(max_path, 20)
         method_width = max(max_method, 6)
@@ -30,7 +26,6 @@ class ASCIITableOutput(OutputFormatter):
         status_width = 6
         lengths_width = 20
 
-        # Header
         header = (f"| {'HOST':<{host_width}} | {'ENDPOINT':<{path_width}} | "
                  f"{'METHOD':<{method_width}} | {'PROFILE':<{profile_width}} | "
                  f"{'STATUS':<{status_width}} | {'LENGTHS':<{lengths_width}} |")
@@ -43,7 +38,6 @@ class ASCIITableOutput(OutputFormatter):
         print(header)
         print(separator)
 
-        # Rows
         for result in results:
             host = result.get('host', '')
             path = result.get('path', '')
@@ -55,7 +49,6 @@ class ASCIITableOutput(OutputFormatter):
             replay_len = result.get('replayed_length', 0)
             lengths = f"orig={orig_len}, re={replay_len}"
 
-            # Truncate long values
             if len(host) > host_width:
                 host = host[:host_width-3] + "..."
             if len(path) > path_width:

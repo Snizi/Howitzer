@@ -15,14 +15,6 @@ import os
 
 
 def parse_profile_args(args_list):
-    """
-    Parse profile-specific arguments from remaining args.
-    Returns: list of dicts with profile name and headers
-    Example: [
-        {'profile': 'lorenzo', 'replace': [('Authorization', 'Bearer token')], 'add': []},
-        {'profile': 'account2', 'replace': [], 'add': [('X-Api-Key', 'secret')]}
-    ]
-    """
     profiles = []
     current_profile = None
     i = 0
@@ -31,11 +23,9 @@ def parse_profile_args(args_list):
         arg = args_list[i]
 
         if arg in ['-p', '--profile']:
-            # Save previous profile if exists
             if current_profile:
                 profiles.append(current_profile)
 
-            # Start new profile
             i += 1
             if i >= len(args_list):
                 raise ValueError("Missing profile name after -p")
@@ -71,7 +61,6 @@ def parse_profile_args(args_list):
 
         i += 1
 
-    # Save last profile
     if current_profile:
         profiles.append(current_profile)
 
@@ -79,18 +68,6 @@ def parse_profile_args(args_list):
 
 
 def parse_proxy_arg(proxy_str):
-    """
-    Parse proxy argument into host and port.
-
-    Args:
-        proxy_str: Proxy string in format "host:port" or None
-
-    Returns:
-        Tuple of (host, port) or (None, None) if proxy_str is None
-
-    Raises:
-        ValueError: If proxy format is invalid
-    """
     if proxy_str is None:
         return None, None
 
@@ -128,7 +105,6 @@ def parse_args():
                        choices=['html', 'json', 'csv'],
                        help='Output format(s) - can be specified multiple times')
 
-    # HTTP Client Configuration
     parser.add_argument('--proxy', default=None,
                        help='Proxy server (format: host:port, e.g., 127.0.0.1:8080)')
     parser.add_argument('--timeout', type=int, default=10,
@@ -136,10 +112,8 @@ def parse_args():
     parser.add_argument('--no-verify-ssl', action='store_true',
                        help='Disable SSL certificate verification (default: verify enabled)')
 
-    # Parse known args first to get everything
     args, remaining = parser.parse_known_args()
 
-    # Manual parsing for profile grouping
     try:
         profile_configs = parse_profile_args(remaining)
     except ValueError as e:
@@ -151,18 +125,14 @@ def parse_args():
 
 
 def main():
-    """Application entry point."""
 
     try:
-        # 1. Parse CLI arguments
         args = parse_args()
 
-        # 2. Create logger
         logger = HowitzerLogger(verbose=args.verbose)
         from utils.logging import set_logger
         set_logger(logger)
 
-        # 3. Load configuration
         logger.info(f"Loading template: {args.template}")
         try:
             config = load_config(args.template)
@@ -171,11 +141,9 @@ def main():
         except Exception as e:
             raise ConfigurationError(f"Invalid YAML syntax: {e}")
 
-        # 4. Validate Burp XML exists
         if not os.path.exists(args.burp_requests):
             raise BurpXMLError(f"Burp XML file not found: {args.burp_requests}")
 
-        # 5. Parse proxy and create HTTP client config
         proxy_host, proxy_port = parse_proxy_arg(args.proxy)
         http_config = HTTPClientConfig(
             proxy_host=proxy_host,
@@ -184,7 +152,6 @@ def main():
             verify_ssl=not args.no_verify_ssl
         )
 
-        # Display HTTP client configuration if verbose
         if args.verbose:
             logger.banner("HTTP Client Configuration")
             logger.info(f"  Proxy: {http_config.proxy_url or 'None (direct connection)'}")
@@ -192,7 +159,6 @@ def main():
             logger.info(f"  SSL Verification: {'Enabled' if http_config.verify_ssl else 'Disabled'}")
             print()
 
-        # 6. Build dependencies
         http_client = HTTPClient(http_config)
         profile_processor = ProfileProcessor(config)
         match_detector = MatchDetector()
@@ -203,7 +169,6 @@ def main():
             logger=logger
         )
 
-        # 7. Create orchestrator
         orchestrator = HowitzerOrchestrator(
             burp_xml_path=args.burp_requests,
             http_client=http_client,
@@ -212,21 +177,16 @@ def main():
             logger=logger
         )
 
-        # 8. Run orchestrator
         matches, total_requests = orchestrator.run(
             profile_configs=args.profile_configs,
             verbose=args.verbose
         )
 
-        # 9. Format and display results
-        # Convert Match objects to dicts for output formatters
         results_dicts = [match.to_dict() for match in matches]
 
-        # Display results in ASCII table
         ascii_output = ASCIITableOutput()
         ascii_output.generate(results_dicts, total_requests=total_requests)
 
-        # Generate additional output formats if specified
         if args.output:
             output_formatters = {
                 'html': HTMLOutput(),
@@ -240,7 +200,6 @@ def main():
                 if filepath:
                     logger.info(f"{format_name.upper()} output saved to: {filepath}")
 
-        # 10. Clean up and exit
         http_client.close()
         sys.exit(0)
 

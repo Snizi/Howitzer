@@ -8,12 +8,8 @@ from utils.http_client import HTTPClient
 from utils.logging import HowitzerLogger
 
 class TestIntegrationPhase3(unittest.TestCase):
-    """
-    Integration tests for Phase 3 components working together.
-    """
 
     def setUp(self):
-        # Setup real components where possible, mock external I/O
         self.config = {
             'profiles': {
                 'integration_test': {
@@ -25,10 +21,9 @@ class TestIntegrationPhase3(unittest.TestCase):
             }
         }
         self.profile_processor = ProfileProcessor(self.config)
-        self.match_detector = MatchDetector() # Default BodyLengthMatcher
+        self.match_detector = MatchDetector()
         self.logger = HowitzerLogger(verbose=True)
         
-        # Mock HTTP Client
         self.http_client = Mock(spec=HTTPClient)
         
         self.replay_service = RequestReplayService(
@@ -39,21 +34,18 @@ class TestIntegrationPhase3(unittest.TestCase):
         )
 
     def test_full_replay_workflow(self):
-        # 1. Setup Request
         original_request = HTTPRequest(
             method='GET',
             url='http://example.com/api/resource',
             headers={'Authorization': 'Bearer original', 'Content-Type': 'application/json'}
         )
         
-        # 2. Setup Responses
         original_response = HTTPResponse(
             status_code=200,
             body='{"data": "secret"}',
             body_length=18
         )
         
-        # Mock replayed response to match length (triggering detection)
         replayed_response = HTTPResponse(
             status_code=200,
             body='{"data": "secret"}',
@@ -61,12 +53,10 @@ class TestIntegrationPhase3(unittest.TestCase):
         )
         self.http_client.send_request.return_value = replayed_response
 
-        # 3. Setup Profile CLI args
         profile = self.profile_processor.get_profile('integration_test')
         replace_headers_cli = [('Authorization', 'Bearer new_token')]
         add_headers_cli = [('X-Integration', 'true')]
 
-        # 4. Execute Workflow
         match = self.replay_service.replay_request(
             original_request=original_request,
             original_response=original_response,
@@ -76,9 +66,7 @@ class TestIntegrationPhase3(unittest.TestCase):
             verbose=True
         )
 
-        # 5. Verify Results
         
-        # Verify HTTP client was called with modified request
         self.http_client.send_request.assert_called_once()
         call_args = self.http_client.send_request.call_args
         sent_request = call_args[0][0]
@@ -86,7 +74,6 @@ class TestIntegrationPhase3(unittest.TestCase):
         self.assertEqual(sent_request.headers['Authorization'], 'Bearer new_token')
         self.assertEqual(sent_request.headers['X-Integration'], 'true')
         
-        # Verify Match was detected
         self.assertIsNotNone(match)
         self.assertEqual(match.url, 'http://example.com/api/resource')
         self.assertEqual(match.matched_profile, 'integration_test')

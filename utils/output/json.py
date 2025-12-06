@@ -5,10 +5,8 @@ from .base import OutputFormatter
 
 
 class JSONOutput(OutputFormatter):
-    """JSON formatter for structured output."""
 
     def generate(self, results, output_dir='.', total_requests=0):
-        """Generate JSON output file."""
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         filename = f"Howitzer-results-{timestamp}.json"
         filepath = os.path.join(output_dir, filename)

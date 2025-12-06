@@ -62,7 +62,6 @@ class TestProfileProcessor(unittest.TestCase):
             headers={}
         )
         profile = self.processor.get_profile('test_profile')
-        # Missing required CLI headers
         with self.assertRaises(ProfileValidationError):
             self.processor.apply_profile(request, profile, [], [])
 

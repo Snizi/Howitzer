@@ -5,10 +5,8 @@ from .base import OutputFormatter
 
 
 class CSVOutput(OutputFormatter):
-    """CSV formatter for tabular output."""
 
     def generate(self, results, output_dir='.', total_requests=0):
-        """Generate CSV output file."""
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         filename = f"Howitzer-results-{timestamp}.csv"
         filepath = os.path.join(output_dir, filename)

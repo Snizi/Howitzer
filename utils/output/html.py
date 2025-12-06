@@ -4,15 +4,12 @@ from .base import OutputFormatter
 
 
 class HTMLOutput(OutputFormatter):
-    """HTML formatter with embedded CSS."""
 
     def generate(self, results, output_dir='.', total_requests=0):
-        """Generate HTML output file."""
         timestamp = datetime.now().strftime('%Y%m%d-%H%M%S')
         filename = f"Howitzer-results-{timestamp}.html"
         filepath = os.path.join(output_dir, filename)
 
-        # Group results by host
         hosts = {}
         for result in results:
             host = result.get('host', 'Unknown Host')
@@ -20,7 +17,6 @@ class HTMLOutput(OutputFormatter):
                 hosts[host] = []
             hosts[host].append(result)
 
-        # Get unique profiles
         profiles = sorted(set(r.get('profile', '') for r in results))
 
         html = self._generate_html(hosts, results, profiles, total_requests)
@@ -35,13 +31,11 @@ class HTMLOutput(OutputFormatter):
             return None
 
     def _generate_html(self, hosts, all_results, profiles, total_requests=0):
-        """Generate HTML string with embedded CSS."""
         generated_time = datetime.now(timezone.utc).isoformat() + 'Z'
         total_matches = len(all_results)
         unique_hosts = len(hosts)
         profile_list = ', '.join(profiles) if profiles else 'None'
 
-        # Build host sections
         host_sections = []
         for host, matches in sorted(hosts.items()):
             rows = []
@@ -57,7 +51,6 @@ class HTMLOutput(OutputFormatter):
                 replay_len = match.get('replayed_length', 0)
                 timestamp = match.get('timestamp', '')
 
-                # Color code status
                 status_class = self._get_status_class(status)
 
                 rows.append(f"""
@@ -92,7 +85,6 @@ class HTMLOutput(OutputFormatter):
                 </section>
             """)
 
-        # No matches message
         if not all_results:
             host_sections = ['<p class="no-results">No matching endpoints found.</p>']
 
@@ -112,8 +104,8 @@ class HTMLOutput(OutputFormatter):
         body {{
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
             line-height: 1.6;
-            color: #333;
-            background: #f5f5f5;
+            color:
+            background:
             padding: 20px;
         }}
 
@@ -127,28 +119,28 @@ class HTMLOutput(OutputFormatter):
         }}
 
         h1 {{
-            color: #2c3e50;
-            border-bottom: 3px solid #3498db;
+            color:
+            border-bottom: 3px solid
             padding-bottom: 15px;
             margin-bottom: 25px;
             font-size: 2em;
         }}
 
         h2 {{
-            color: #34495e;
+            color:
             margin-top: 30px;
             margin-bottom: 15px;
             font-size: 1.5em;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid
             padding-left: 12px;
         }}
 
         .summary {{
-            background: #ecf0f1;
+            background:
             padding: 20px;
             border-radius: 6px;
             margin-bottom: 30px;
-            border-left: 4px solid #3498db;
+            border-left: 4px solid
         }}
 
         .summary p {{
@@ -157,7 +149,7 @@ class HTMLOutput(OutputFormatter):
         }}
 
         .summary strong {{
-            color: #2c3e50;
+            color:
             font-weight: 600;
         }}
 
@@ -169,7 +161,7 @@ class HTMLOutput(OutputFormatter):
         }}
 
         thead {{
-            background: #34495e;
+            background:
             color: white;
         }}
 
@@ -184,48 +176,48 @@ class HTMLOutput(OutputFormatter):
 
         td {{
             padding: 10px 12px;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid
         }}
 
         tbody tr:hover {{
-            background: #f8f9fa;
+            background:
         }}
 
         tbody tr:nth-child(even) {{
-            background: #fafafa;
+            background:
         }}
 
         tbody tr:nth-child(even):hover {{
-            background: #f0f0f0;
+            background:
         }}
 
         .method {{
             font-weight: 600;
-            color: #3498db;
+            color:
         }}
 
         .timestamp {{
             font-size: 0.9em;
-            color: #7f8c8d;
+            color:
         }}
 
         .status-success {{
-            color: #27ae60;
+            color:
             font-weight: 600;
         }}
 
         .status-redirect {{
-            color: #f39c12;
+            color:
             font-weight: 600;
         }}
 
         .status-client-error {{
-            color: #e67e22;
+            color:
             font-weight: 600;
         }}
 
         .status-server-error {{
-            color: #e74c3c;
+            color:
             font-weight: 600;
         }}
 
@@ -236,17 +228,17 @@ class HTMLOutput(OutputFormatter):
         .no-results {{
             text-align: center;
             padding: 40px;
-            color: #7f8c8d;
+            color:
             font-size: 1.2em;
         }}
 
         .warning {{
-            background: #fff3cd;
-            border: 1px solid #ffc107;
+            background:
+            border: 1px solid
             border-radius: 6px;
             padding: 15px;
             margin-bottom: 20px;
-            color: #856404;
+            color:
         }}
 
         .warning strong {{
@@ -257,9 +249,9 @@ class HTMLOutput(OutputFormatter):
         footer {{
             margin-top: 40px;
             padding-top: 20px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid
             text-align: center;
-            color: #7f8c8d;
+            color:
             font-size: 0.9em;
         }}
     </style>
@@ -293,7 +285,6 @@ class HTMLOutput(OutputFormatter):
         return html_template
 
     def _get_status_class(self, status):
-        """Get CSS class for status code."""
         try:
             status_int = int(status)
             if 200 <= status_int < 300:
@@ -309,7 +300,6 @@ class HTMLOutput(OutputFormatter):
         return ''
 
     def _escape_html(self, text):
-        """Escape HTML special characters."""
         if not text:
             return ''
         text = str(text)

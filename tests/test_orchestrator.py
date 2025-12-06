@@ -24,7 +24,6 @@ class TestHowitzerOrchestrator(unittest.TestCase):
 
     @patch('utils.orchestrator.BurpXMLParser')
     def test_run_success(self, MockParser):
-        # Setup mocks
         mock_parser_instance = MockParser.return_value
         mock_parser_instance.count_items.return_value = 1
         
@@ -48,10 +47,8 @@ class TestHowitzerOrchestrator(unittest.TestCase):
             'add': []
         }]
 
-        # Execute
-        results = self.orchestrator.run(profile_configs)
+        results, total_requests = self.orchestrator.run(profile_configs)
 
-        # Verify
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0], mock_match)
         self.profile_processor.get_profile.assert_called_with('test')
@@ -60,7 +57,6 @@ class TestHowitzerOrchestrator(unittest.TestCase):
 
     @patch('utils.orchestrator.BurpXMLParser')
     def test_run_http_error_continues(self, MockParser):
-        # Setup mocks
         mock_parser_instance = MockParser.return_value
         mock_parser_instance.count_items.return_value = 1
         mock_parser_instance.parse.return_value = [
@@ -70,7 +66,6 @@ class TestHowitzerOrchestrator(unittest.TestCase):
 
         self.profile_processor.get_profile.return_value = Profile(name='test', description='', original_headers='keep')
 
-        # First request fails, second succeeds
         self.replay_service.replay_request.side_effect = [
             HTTPClientError("Connection failed"),
             Match(url='http://2.com', method='GET', original_profile='original', matched_profile='test', response_length=0, original_length=0)
@@ -78,10 +73,8 @@ class TestHowitzerOrchestrator(unittest.TestCase):
 
         profile_configs = [{'profile': 'test', 'replace': [], 'add': []}]
 
-        # Execute
-        results = self.orchestrator.run(profile_configs)
+        results, total_requests = self.orchestrator.run(profile_configs)
 
-        # Verify
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].url, 'http://2.com')
         self.logger.error.assert_called()
